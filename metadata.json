@@ -1,0 +1,6 @@
+{
+  "name": "Valentine's Day for Fernanda",
+  "description": "Uma declaração de amor animada para o Dia dos Namorados, de Eduardo para Fernanda.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
