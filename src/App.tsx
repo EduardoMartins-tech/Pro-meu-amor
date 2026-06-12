@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useScroll } from 'motion/react';
 import { Heart, Music2, Volume2, VolumeX } from 'lucide-react';
 
 const YOUTUBE_VIDEO_ID = "tb1gj06SKW8";
@@ -163,7 +163,6 @@ const FloatingLabels = () => {
   );
 };
 
-// Data que começamos a namorar
 const START_DATE = new Date('2026-02-25T00:00:00');
 
 const ROMANTIC_QUOTES = [
@@ -231,15 +230,197 @@ const LoveCounter = () => {
   useEffect(() => {
     const start = START_DATE.getTime();
     const now = new Date().getTime();
-    const diff = Math.max(0, now - start); // Não permite valores negativos se for antes da data
+    const diff = Math.max(0, now - start);
     setDays(Math.floor(diff / (1000 * 60 * 60 * 24)));
   }, []);
 
   return (
-    <div className="mb-4 text-rose-500 font-sans tracking-widest text-sm uppercase flex items-center justify-center gap-2">
-      <Heart size={14} className="animate-pulse" fill="currentColor" />
-      <span className="font-bold">{days} dias amando você</span>
-      <Heart size={14} className="animate-pulse" fill="currentColor" />
+    <div className="mb-12 mt-8 flex flex-col items-center justify-center gap-4">
+      <div className="relative group cursor-default">
+        {/* Glowing background effect */}
+        <div className="absolute inset-0 bg-rose-500/10 blur-[40px] rounded-full scale-150 transition-opacity duration-1000 group-hover:bg-rose-500/30"></div>
+        
+        {/* Heart icons */}
+        <Heart 
+          size={56} 
+          className="absolute -top-6 -right-6 text-rose-500/30 animate-[pulse_3s_ease-in-out_infinite]" 
+          fill="currentColor" 
+        />
+        <Heart 
+          size={32} 
+          className="absolute -bottom-4 -left-4 text-rose-500/20 animate-[pulse_4s_ease-in-out_infinite]" 
+          fill="currentColor" 
+        />
+        
+        {/* Main numbers display */}
+        <div className="relative overflow-hidden flex flex-col items-center bg-black/40 backdrop-blur-xl px-12 py-10 rounded-[2rem] border border-rose-900/40 shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
+          <div className="absolute inset-0 bg-gradient-to-b from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+          <span className="text-7xl sm:text-8xl font-serif text-rose-200 font-bold tracking-tighter mb-4 drop-shadow-[0_0_20px_rgba(244,63,94,0.3)]">
+            {isNaN(days) ? 0 : days}
+          </span>
+          <span className="text-sm font-sans text-rose-400/80 uppercase tracking-[0.4em]">
+            Dias Amando Você
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const VisitTracker = () => {
+  const [visits, setVisits] = useState(0);
+
+  useEffect(() => {
+    const currentVisits = parseInt(localStorage.getItem('love_visits') || '0', 10);
+    const newVisits = currentVisits + 1;
+    localStorage.setItem('love_visits', newVisits.toString());
+    setVisits(newVisits);
+  }, []);
+
+  if (visits === 0) return null;
+
+  return (
+    <div className="mt-4 text-xs font-sans tracking-widest uppercase text-rose-400/50">
+      Times we've shared this moment: {visits}
+    </div>
+  );
+};
+
+const ScrollProgressBar = () => {
+  const { scrollYProgress } = useScroll();
+  return (
+    <motion.div
+      className="fixed top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-700 via-rose-500 to-rose-300 origin-left z-[100] drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]"
+      style={{ scaleX: scrollYProgress }}
+    />
+  );
+};
+
+const QUIZ_QUESTIONS = [
+  {
+    question: "Qual foi a nosso primeiro apelido carinhoso?",
+    options: ["Amor", "Meu bem", "Vida", "Princesa"],
+    correctAnswer: "Meu bem"
+  },
+  {
+    question: "Aonde vamos casar?",
+    options: ["Na igreja", "Na praia ou sitio", "Na fazenda", "Numa capela"],
+    correctAnswer: "Na praia ou sitio"
+  },
+  {
+    question: "Qual vai ser o nome da nossa filha?",
+    options: ["Helena", "Alice", "Cecilia", "Laura"],
+    correctAnswer: "Cecilia"
+  }
+];
+
+const LoveQuiz = () => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+
+  const handleAnswerClick = (option: string) => {
+    setSelectedAnswer(option);
+    const correct = option === QUIZ_QUESTIONS[currentQuestion].correctAnswer;
+    setIsCorrect(correct);
+
+    setTimeout(() => {
+      if (correct) {
+        setScore((prev) => prev + 1);
+      }
+      
+      const nextQuestion = currentQuestion + 1;
+      if (nextQuestion < QUIZ_QUESTIONS.length) {
+        setCurrentQuestion(nextQuestion);
+        setSelectedAnswer(null);
+        setIsCorrect(null);
+      } else {
+        setShowResult(true);
+      }
+    }, 1500);
+  };
+
+  const restartQuiz = () => {
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowResult(false);
+    setSelectedAnswer(null);
+    setIsCorrect(null);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto px-6 mb-32">
+      <div className="p-8 bg-[#1e141a]/80 backdrop-blur-md rounded-3xl border border-rose-900/30 shadow-2xl relative overflow-hidden">
+        {/* Glow effect */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-500/10 rounded-full blur-[40px] pointer-events-none"></div>
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-rose-700/10 rounded-full blur-[40px] pointer-events-none"></div>
+
+        <h3 className="text-3xl font-serif text-rose-300 text-center mb-8 italic relative z-10">Pequeno Quiz do Nosso Amor</h3>
+        
+        {showResult ? (
+          <div className="text-center space-y-6 relative z-10">
+            {score === QUIZ_QUESTIONS.length ? (
+              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+                <Heart className="mx-auto text-rose-500 mb-4 animate-[pulse_2s_ease-in-out_infinite]" size={56} fill="currentColor" />
+                <h4 className="text-2xl font-bold text-rose-200 mb-6 tracking-wider">MENSAGEM SECRETA DESBLOQUEADA!</h4>
+                <div className="text-lg md:text-xl font-sans text-rose-100 leading-relaxed bg-rose-950/40 p-6 md:p-8 rounded-2xl border border-rose-500/30 text-left shadow-inner">
+                  Fernanda, meu amor, eu sinto um orgulho imenso de você e de tudo que estamos construindo. Você é uma mulher incrível, forte, linda e, com todo o respeito do mundo (ou melhor, sem nenhum)... 
+                  <strong className="text-rose-400 flex items-center gap-3 text-2xl md:text-3xl uppercase tracking-widest mt-4 mb-2 animate-bounce">
+                    🔥 MUITO GOSTOSA! 🔥
+                  </strong>
+                  Te amo pra toda vida!
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <h4 className="text-2xl font-bold text-rose-300 mb-4 tracking-wider mt-4">Quase lá, princesa!</h4>
+                <p className="text-lg text-rose-200/80 mb-8">Você acertou {score} de {QUIZ_QUESTIONS.length}. Tente de novo para desbloquear sua surpresa secreta!</p>
+                <button onClick={restartQuiz} className="px-8 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-full font-sans tracking-wide uppercase transition-colors shadow-lg shadow-rose-900/50">Tentar Novamente</button>
+              </motion.div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-6 relative z-10">
+            <div className="flex justify-between items-center text-xs uppercase tracking-widest text-rose-500/80 font-bold mb-6 border-b border-rose-900/30 pb-4">
+              <span>Pergunta {currentQuestion + 1} de {QUIZ_QUESTIONS.length}</span>
+              <span>Acertos: {score}</span>
+            </div>
+            
+            <h4 className="text-xl md:text-2xl font-sans text-rose-50 mb-8 text-center leading-relaxed">
+              {QUIZ_QUESTIONS[currentQuestion].question}
+            </h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {QUIZ_QUESTIONS[currentQuestion].options.map((option) => {
+                let btnStyle = "bg-[#2b1c25] hover:bg-rose-900/40 border-rose-900/30 text-rose-200 hover:shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:-translate-y-1";
+                
+                if (selectedAnswer === option) {
+                  if (isCorrect) {
+                     btnStyle = "bg-green-900/40 border-green-500/50 text-green-200 shadow-[0_0_20px_rgba(34,197,94,0.2)]";
+                  } else {
+                     btnStyle = "bg-red-900/40 border-red-500/50 text-red-200 shadow-[0_0_20px_rgba(239,68,68,0.2)]";
+                  }
+                } else if (selectedAnswer && option === QUIZ_QUESTIONS[currentQuestion].correctAnswer) {
+                     btnStyle = "bg-green-900/40 border-green-500/50 text-green-200";
+                }
+
+                return (
+                  <button
+                    key={option}
+                    onClick={() => !selectedAnswer && handleAnswerClick(option)}
+                    disabled={!!selectedAnswer}
+                    className={`p-4 rounded-xl border transition-all duration-300 ${btnStyle} font-sans text-lg ${selectedAnswer ? 'cursor-default' : 'cursor-pointer'}`}
+                  >
+                    {option}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -328,6 +509,7 @@ export default function App() {
             transition={{ duration: 1.2, delay: 0.3 }}
             className="w-full flex-col items-center z-10"
           >
+            <ScrollProgressBar />
             {/* Audio Toggle Control */}
             <div className="fixed top-4 right-4 z-50">
               <button 
@@ -412,6 +594,16 @@ export default function App() {
               <RomanticQuote />
             </motion.section>
 
+            {/* Interactive Quiz Component */}
+            <motion.section
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.8 }}
+            >
+              <LoveQuiz />
+            </motion.section>
+
             {/* Final Letter Section */}
             <motion.section
               initial={{ opacity: 0, scale: 0.9 }}
@@ -438,6 +630,7 @@ export default function App() {
             <div className="pb-10 pt-20 border-t border-rose-900/30 mt-20 text-center text-sm font-sans text-rose-400/50">
               <LoveCounter />
               <p>Feito com amor por Eduardo para sua princesa.</p>
+              <VisitTracker />
             </div>
           </motion.div>
         )}
